@@ -1,3 +1,6 @@
+using AB108Uniqlo.DataAccess;
+using Microsoft.EntityFrameworkCore;
+
 namespace AB108Uniqlo
 {
     public class Program
@@ -8,6 +11,11 @@ namespace AB108Uniqlo
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddDbContext<UniqloDbContext>(opt =>
+            {
+                opt.UseSqlServer(builder.Configuration.GetConnectionString("MSSql"));
+            });
+
 
             var app = builder.Build();
 
