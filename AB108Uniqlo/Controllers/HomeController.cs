@@ -1,4 +1,5 @@
 using AB108Uniqlo.DataAccess;
+using AB108Uniqlo.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
