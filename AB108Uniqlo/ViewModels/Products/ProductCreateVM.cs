@@ -15,6 +15,7 @@ namespace AB108Uniqlo.ViewModels.Products
         public int Discount { get; set; }
         public int BrandId { get; set; }
         public IFormFile File { get; set; }
+        public ICollection<IFormFile>? OtherFiles { get; set; }
 
         public static implicit operator Product(ProductCreateVM vm)
         {
