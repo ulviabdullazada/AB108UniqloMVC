@@ -1,12 +1,15 @@
 ﻿using AB108Uniqlo.DataAccess;
 using AB108Uniqlo.Models;
 using AB108Uniqlo.ViewModels.Sliders;
+using AB108Uniqlo.Views.Account.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace AB108Uniqlo.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = nameof(Roles.Admin))]
     public class SliderController(UniqloDbContext _context, IWebHostEnvironment _env) : Controller
     {
         public async Task<IActionResult> Index()

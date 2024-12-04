@@ -1,4 +1,7 @@
 using AB108Uniqlo.DataAccess;
+using AB108Uniqlo.Extensions;
+using AB108Uniqlo.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace AB108Uniqlo
@@ -15,8 +18,23 @@ namespace AB108Uniqlo
             {
                 opt.UseSqlServer(builder.Configuration.GetConnectionString("MSSql"));
             });
-
-
+            builder.Services.AddIdentity<User, IdentityRole>(opt =>
+            {
+                opt.User.RequireUniqueEmail = true;
+                opt.Password.RequiredLength = 3;
+                opt.Password.RequireDigit = false;
+                opt.Password.RequireLowercase = false;
+                opt.Password.RequireUppercase = false;
+                opt.Password.RequireNonAlphanumeric = false;
+                opt.Lockout.MaxFailedAccessAttempts = 3;
+                //opt.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(int.MaxValue);
+            }).AddDefaultTokenProviders().AddEntityFrameworkStores<UniqloDbContext>();
+            //builder.Services.AddSession();
+            builder.Services.ConfigureApplicationCookie(x =>
+            {
+                x.LoginPath = "/login";
+                x.AccessDeniedPath = "/Home/AccessDenied";
+            });
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -27,10 +45,23 @@ namespace AB108Uniqlo
             app.UseStaticFiles();
 
             app.UseRouting();
-
-            //app.UseAuthorization();
-
-
+            app.UseAuthorization();
+            app.UseUserSeed();
+            //app.UseSession();
+            app.MapControllerRoute(
+                name: "login",
+                pattern: "login", new
+                {
+                    Controller = "Account",
+                    Action = "Login"
+                });
+            app.MapControllerRoute(
+                name: "register",
+                pattern: "register", new
+                {
+                    Controller = "Account",
+                    Action = "Register"
+                });
             app.MapControllerRoute(
                 name: "area",
                 pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}");

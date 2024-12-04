@@ -1,8 +1,11 @@
 ﻿using AB108Uniqlo.DataAccess;
 using AB108Uniqlo.Extensions;
+using AB108Uniqlo.Helpers;
 using AB108Uniqlo.Models;
 using AB108Uniqlo.ViewModels.Products;
+using AB108Uniqlo.Views.Account.Enums;
 using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +15,7 @@ using System.Net.Mime;
 namespace AB108Uniqlo.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = RoleConstants.Product)]
     public class ProductController(IWebHostEnvironment _env,UniqloDbContext _context) : Controller
     {
         public async Task<IActionResult> Index()
@@ -107,9 +111,11 @@ namespace AB108Uniqlo.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteImgs(int id, IEnumerable<string> imgNames)
         {
+            //result => Neche setirde deyishiklik oldu
             int result = await _context.ProductImages.Where(x => imgNames.Contains(x.ImageUrl)).ExecuteDeleteAsync();
             if(result > 0)
             {
+                System.IO.File.Delete("asd");
                 //serverden (komputerden (fayllardan)) kohne shekilleri sil
             }
             return RedirectToAction(nameof(Update), new { id });
