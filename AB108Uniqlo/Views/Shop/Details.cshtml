@@ -66,15 +66,23 @@
                     <div class="pro__detl__title">
                         <h2>@Model.Name</h2>
                     </div>
+                    @if (User.Identity?.IsAuthenticated ?? false)
+                    {
+                        <form asp-action="Rate">
+                            <input type="hidden" name="productId" value="@Model.Id" />
+                            <input type="number" name="rate" min="1" max="5" value="@ViewBag.Rating"/> <button class="btn">Rate</button>
+
+                        </form>
+                    }
                     <div class="pro__dtl__rating">
+                        
                         <ul class="pro__rating">
-                            <li><span class="ti-star"></span></li>
-                            <li><span class="ti-star"></span></li>
-                            <li><span class="ti-star"></span></li>
-                            <li><span class="ti-star"></span></li>
-                            <li><span class="ti-star"></span></li>
+                            @for (int i = 0; i < Math.Ceiling(Model.ProductRatings.Average(x => x.RatingRate)); i++)
+                            {
+                                <li><span class="ti-star"></span></li>
+                            }
                         </ul>
-                        <span class="rat__qun">(Based on 0 Ratings)</span>
+                        <span class="rat__qun">(Based on @Model.ProductRatings.Count Ratings)</span>
                     </div>
                     <div class="pro__details">
                         <p>@Model.Description</p>

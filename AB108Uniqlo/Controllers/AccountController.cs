@@ -1,14 +1,18 @@
 ﻿using AB108Uniqlo.Extensions;
 using AB108Uniqlo.Models;
+using AB108Uniqlo.Services.Abstracts;
 using AB108Uniqlo.ViewModels.Auths;
 using AB108Uniqlo.Views.Account.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
+using System.Net.Mail;
+using System.Text;
 
 namespace AB108Uniqlo.Controllers
 {
-    public class AccountController(UserManager<User> _userManager, SignInManager<User> _signInManager, RoleManager<IdentityRole> _roleManager) : Controller
+    public class AccountController(UserManager<User> _userManager, SignInManager<User> _signInManager, RoleManager<IdentityRole> _roleManager, IEmailService _service) : Controller
     {
         private bool isAuthenticated => HttpContext.User.Identity?.IsAuthenticated ?? false;
         public IActionResult Register()
@@ -46,7 +50,9 @@ namespace AB108Uniqlo.Controllers
                 }
                 return View();
             }
-            return View();
+            string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            _service.SendEmailConfirmation(user.Email, user.UserName,token);
+            return Content("Email sent!");
         }
 
         //public async Task<IActionResult> Method()
@@ -87,7 +93,7 @@ namespace AB108Uniqlo.Controllers
                 }
                 if (result.IsNotAllowed)
                 {
-                    ModelState.AddModelError("", "Username or password is wrong!");
+                    ModelState.AddModelError("", "You must confirm your account");
                 }
                 return View();
             }
@@ -107,6 +113,24 @@ namespace AB108Uniqlo.Controllers
         {
             await _signInManager.SignOutAsync();
             return RedirectToAction(nameof(Login));
+        }
+        public async Task<IActionResult> VerifyEmail(string token, string user)
+        {
+            var entity = await _userManager.FindByNameAsync(user);
+            if (entity is null) return BadRequest();
+            var result = await _userManager.ConfirmEmailAsync(entity,token.Replace(' ','+'));
+            if (!result.Succeeded)
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (var item in result.Errors)
+                {
+                    sb.AppendLine(item.Description);
+                }
+                return Content(sb.ToString());
+            }
+            await _signInManager.SignInAsync(entity, true);
+            return RedirectToAction("Index","Home");
+            
         }
     }
 }

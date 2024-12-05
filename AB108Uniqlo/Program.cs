@@ -1,6 +1,9 @@
 using AB108Uniqlo.DataAccess;
 using AB108Uniqlo.Extensions;
+using AB108Uniqlo.Helpers;
 using AB108Uniqlo.Models;
+using AB108Uniqlo.Services.Abstracts;
+using AB108Uniqlo.Services.Implemets;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,6 +24,7 @@ namespace AB108Uniqlo
             builder.Services.AddIdentity<User, IdentityRole>(opt =>
             {
                 opt.User.RequireUniqueEmail = true;
+                opt.SignIn.RequireConfirmedEmail = true;
                 opt.Password.RequiredLength = 3;
                 opt.Password.RequireDigit = false;
                 opt.Password.RequireLowercase = false;
@@ -29,6 +33,9 @@ namespace AB108Uniqlo
                 opt.Lockout.MaxFailedAccessAttempts = 3;
                 //opt.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(int.MaxValue);
             }).AddDefaultTokenProviders().AddEntityFrameworkStores<UniqloDbContext>();
+            builder.Services.AddScoped<IEmailService, EmailService>();
+            var opt = new SmtpOptions();
+            builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.Name));
             //builder.Services.AddSession();
             builder.Services.ConfigureApplicationCookie(x =>
             {
