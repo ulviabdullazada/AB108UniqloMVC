@@ -34,6 +34,7 @@ namespace AB108Uniqlo
                 //opt.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(int.MaxValue);
             }).AddDefaultTokenProviders().AddEntityFrameworkStores<UniqloDbContext>();
             builder.Services.AddScoped<IEmailService, EmailService>();
+            builder.Services.AddMemoryCache();
             var opt = new SmtpOptions();
             builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.Name));
             //builder.Services.AddSession();

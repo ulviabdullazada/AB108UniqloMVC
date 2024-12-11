@@ -29,7 +29,7 @@ namespace AB108Uniqlo.Services.Implemets
             MailMessage msg = new MailMessage(_from,to);
             msg.IsBodyHtml = true;
             msg.Subject = "Confirm your email adress";
-            string url = Context.Request.Scheme + "://" + Context.Request.Host + "/Account/VerifyEmail?token=" + token+"&user="+name;
+            string url = Context.Request.Scheme + "://" + Context.Request.Host + "/Account/VerifyEmail?code=" + token+"&user="+name;
             msg.Body = EmailTemplates.VerifyEmail.Replace("__$name", name).Replace("__$link", url);
             _client.Send(msg);
         }

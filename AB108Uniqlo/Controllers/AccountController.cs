@@ -1,4 +1,5 @@
-﻿using AB108Uniqlo.Extensions;
+﻿using AB108Uniqlo.DataAccess;
+using AB108Uniqlo.Extensions;
 using AB108Uniqlo.Models;
 using AB108Uniqlo.Services.Abstracts;
 using AB108Uniqlo.ViewModels.Auths;
@@ -6,13 +7,14 @@ using AB108Uniqlo.Views.Account.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using System.Net;
 using System.Net.Mail;
 using System.Text;
 
 namespace AB108Uniqlo.Controllers
 {
-    public class AccountController(UserManager<User> _userManager, SignInManager<User> _signInManager, RoleManager<IdentityRole> _roleManager, IEmailService _service) : Controller
+    public class AccountController(UserManager<User> _userManager, SignInManager<User> _signInManager, RoleManager<IdentityRole> _roleManager, IEmailService _service, UniqloDbContext _context, IMemoryCache _cache) : Controller
     {
         private bool isAuthenticated => HttpContext.User.Identity?.IsAuthenticated ?? false;
         public IActionResult Register()
@@ -50,8 +52,16 @@ namespace AB108Uniqlo.Controllers
                 }
                 return View();
             }
-            string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            _service.SendEmailConfirmation(user.Email, user.UserName,token);
+            Random r = new Random();
+            int code = r.Next(1000, 9999);
+            //await _context.UserCodes.AddAsync(new UserCode
+            //{
+            //    UserId = user.Id,
+            //    Code = code
+            //});
+            //await _context.SaveChangesAsync();
+            _cache.Set(user.Id, code, DateTimeOffset.Now.AddMinutes(30));
+            _service.SendEmailConfirmation(user.Email, user.UserName, code.ToString());
             return Content("Email sent!");
         }
 
@@ -114,20 +124,16 @@ namespace AB108Uniqlo.Controllers
             await _signInManager.SignOutAsync();
             return RedirectToAction(nameof(Login));
         }
-        public async Task<IActionResult> VerifyEmail(string token, string user)
+        public async Task<IActionResult> VerifyEmail(int code, string user)
         {
             var entity = await _userManager.FindByNameAsync(user);
             if (entity is null) return BadRequest();
-            var result = await _userManager.ConfirmEmailAsync(entity,token.Replace(' ','+'));
-            if (!result.Succeeded)
-            {
-                StringBuilder sb = new StringBuilder();
-                foreach (var item in result.Errors)
-                {
-                    sb.AppendLine(item.Description);
-                }
-                return Content(sb.ToString());
-            }
+            int? cacheCode = _cache.Get<int>(entity.Id);
+            if (!cacheCode.HasValue || cacheCode != code)
+                return BadRequest();
+            entity.EmailConfirmed = true;
+            await _userManager.UpdateAsync(entity);
+            _cache.Remove(entity.Id);
             await _signInManager.SignInAsync(entity, true);
             return RedirectToAction("Index","Home");
             

@@ -11,6 +11,7 @@ namespace AB108Uniqlo.DataAccess
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductImage> ProductImages { get; set; }
         public DbSet<ProductRating> ProductRatings { get; set; }
+
         public UniqloDbContext(DbContextOptions opt):base(opt){ }
     }
 }

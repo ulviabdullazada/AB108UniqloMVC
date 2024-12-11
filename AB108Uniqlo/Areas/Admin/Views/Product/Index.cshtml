@@ -1,11 +1,13 @@
-﻿@model List<Product>
+﻿@using AB108Uniqlo.ViewModels.Commons
+@model List<Product>
 @{
     ViewData["Title"] = "Index";
+
 }
 
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Sliders</h6>
+        <h6 class="m-0 font-weight-bold text-primary">Products</h6>
         <a class="btn btn-primary" asp-action="Create">Yarat</a>
     </div>
     <div class="card-body">
@@ -43,6 +45,7 @@
                 </tbody>
             </table>
         </div>
+        <partial name="_PaginationPartial" model="@(ViewBag.PaginationItems as PaginationItemsVM)">
     </div>
 </div>
 

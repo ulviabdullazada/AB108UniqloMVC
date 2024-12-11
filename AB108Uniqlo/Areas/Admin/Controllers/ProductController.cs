@@ -2,6 +2,7 @@
 using AB108Uniqlo.Extensions;
 using AB108Uniqlo.Helpers;
 using AB108Uniqlo.Models;
+using AB108Uniqlo.ViewModels.Commons;
 using AB108Uniqlo.ViewModels.Products;
 using AB108Uniqlo.Views.Account.Enums;
 using Azure.Core;
@@ -18,9 +19,15 @@ namespace AB108Uniqlo.Areas.Admin.Controllers
     [Authorize(Roles = RoleConstants.Product)]
     public class ProductController(IWebHostEnvironment _env,UniqloDbContext _context) : Controller
     {
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? page = 1, int? take = 4)
         {
-            return View(await _context.Products.Include(x=> x.Brand).ToListAsync());
+            if (!page.HasValue) page = 1;
+            if (!take.HasValue) take = 4;
+            var query = _context.Products.Include(x => x.Brand).AsQueryable();
+            var data = await query.Skip(take.Value*(page.Value-1)).Take(take.Value).ToListAsync();
+            int total = await query.CountAsync();
+            ViewBag.PaginationItems = new PaginationItemsVM(total, take.Value, page.Value);
+            return View(data);
         }
         public async Task<IActionResult> Create()
         {
