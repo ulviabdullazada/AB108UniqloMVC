@@ -138,5 +138,31 @@ namespace AB108Uniqlo.Controllers
             return RedirectToAction("Index","Home");
             
         }
+        public async Task<IActionResult> ResetPassword()
+        {
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null) return NotFound();
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            _service.SendEmailConfirmation(user.Email!, user.UserName!, token);
+            return Content("Sent");
+        }
+        public async Task<IActionResult> NewPassword()
+        {
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> NewPassword(string user,string token, string pass)
+        {
+            var entity = await _userManager.FindByNameAsync(user);
+            if (entity == null) return NotFound();
+            
+            var result = await _userManager.ResetPasswordAsync(entity, token.Replace(' ','+'), pass);
+            return Json(result.Succeeded);
+        }
     }
 }
